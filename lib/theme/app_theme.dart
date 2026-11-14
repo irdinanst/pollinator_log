@@ -60,6 +60,16 @@ class AppTheme {
           ),
         ),
       ),
+            floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: _forest,
+        foregroundColor: _honey,
+      ),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: Colors.white,
+        selectedItemColor: _forest,
+        unselectedItemColor: Color(0xFF4F6156),
+        type: BottomNavigationBarType.fixed,
+      ),
     );
   }
 }
