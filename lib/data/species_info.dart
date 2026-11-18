@@ -46,8 +46,8 @@ const Map<String, SpeciesInfo> speciesInfo = {
         'and wall gaps. It visits fruit trees, wildflowers and garden '
         'plants, carrying pollen home in baskets on its back legs.',
     bodyParts: [
-      (name: 'Wings', detail: 'Two pairs, used for flight.'),
-      (name: 'Antennae', detail: 'Sense smell and touch.'),
+      (name: 'Wings', detail: 'Used for flight.'),
+      (name: 'Antennae', detail: 'Sense the surroundings.'),
       (name: 'Striped abdomen', detail: 'The rear section of the body.'),
       (name: 'Compound eyes', detail: 'Help detect movement and shapes.'),
       (name: 'Pollen baskets', detail: 'Carry pollen on the hind legs.'),

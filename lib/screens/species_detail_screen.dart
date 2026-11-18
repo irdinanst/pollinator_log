@@ -1,21 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
 import '../data/species_info.dart';
 import '../models/sighting.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/glow_background.dart';
 
-/// Shows facts about the tapped sighting's species.
 /// The parent supplies the logging action so sightings stay in HomeShell.
 class SpeciesDetailScreen extends StatefulWidget {
-  const SpeciesDetailScreen({
-    super.key,
-    this.sighting,
-    required this.onLogSpecies,
-  });
+  const SpeciesDetailScreen({super.key, this.sighting, required this.onLogSpecies});
 
-  final Sighting? sighting; // null = default (Asian honey bee)
+  final Sighting? sighting; // which card was tapped (null = Asian honey bee)
   final VoidCallback onLogSpecies;
 
   @override
@@ -30,17 +24,13 @@ class _SpeciesDetailScreenState extends State<SpeciesDetailScreen> {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
+    // Content for the tapped species
     final s = widget.sighting;
     final info = infoFor(
       group: s?.group ?? 'Bee',
       scientificName: s?.scientificName ?? '',
       species: s?.species ?? '',
     );
-    // Use the names the user typed, fall back to the guide's names.
-    final name = (s == null || s.species.isEmpty) ? info.name : s.species;
-    final latin = (s == null || s.scientificName.isEmpty)
-        ? info.scientificName
-        : s.scientificName;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Species Detail')),
@@ -52,7 +42,7 @@ class _SpeciesDetailScreenState extends State<SpeciesDetailScreen> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(24, 16, 24, 100),
                 children: [
-                  // Gradient box with the species drawing and a flower
+                  // Decorative illustration; no external image download needed.
                   Container(
                     height: 200,
                     decoration: BoxDecoration(
@@ -66,49 +56,26 @@ class _SpeciesDetailScreenState extends State<SpeciesDetailScreen> {
                         ],
                       ),
                     ),
-                    // Honey bee keeps Norman's original emoji art,
-                    // the other species show their drawings.
-                    child: info.emoji != null
-                        ? Center(
-                            child: Text(
-                              info.emoji!,
-                              style: const TextStyle(fontSize: 72),
+                    // Honey bee keeps the emoji, other species show their drawing
+                    child: Center(
+                      child: info.emoji != null
+                          ? Text(info.emoji!, style: const TextStyle(fontSize: 72))
+                          : SizedBox(
+                              height: 140,
+                              child: SvgPicture.asset(
+                                info.drawing,
+                                semanticsLabel: 'Drawing of ${info.name}',
+                              ),
                             ),
-                          )
-                        : ClipRRect(
-                            borderRadius: BorderRadius.circular(28),
-                            child: Stack(
-                              children: [
-                                Positioned(
-                                  right: -16,
-                                  bottom: -24,
-                                  width: 180,
-                                  height: 180,
-                                  child: SvgPicture.asset(info.flower),
-                                ),
-                                Positioned(
-                                  left: 12,
-                                  top: 24,
-                                  width: 210,
-                                  child: SvgPicture.asset(
-                                    info.drawing,
-                                    semanticsLabel: 'Drawing of $name',
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                    ),
                   ),
                   const SizedBox(height: 24),
                   Row(
                     children: [
                       Expanded(
-                        child: Text(
-                          name,
-                          style: theme.textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        child: Text(info.name,
+                            style: theme.textTheme.headlineMedium
+                                ?.copyWith(fontWeight: FontWeight.bold)),
                       ),
                       IconButton.filledTonal(
                         tooltip: _isFavourite
@@ -117,31 +84,24 @@ class _SpeciesDetailScreenState extends State<SpeciesDetailScreen> {
                         onPressed: () {
                           setState(() => _isFavourite = !_isFavourite);
                         },
-                        icon: Icon(
-                          _isFavourite ? Icons.favorite : Icons.favorite_border,
-                        ),
+                        icon: Icon(_isFavourite
+                            ? Icons.favorite
+                            : Icons.favorite_border),
                       ),
                     ],
                   ),
-                  Text(
-                    latin,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontStyle: FontStyle.italic,
-                      color: scheme.primary,
-                    ),
-                  ),
+                  Text(info.scientificName,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontStyle: FontStyle.italic,
+                        color: scheme.primary,
+                      )),
                   const SizedBox(height: 20),
-                  Row(
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
                     children: [
-                      for (int i = 0; i < info.facts.length; i++) ...[
-                        if (i > 0) const SizedBox(width: 10),
-                        Expanded(
-                          child: _Fact(
-                            value: info.facts[i].value,
-                            label: info.facts[i].label,
-                          ),
-                        ),
-                      ],
+                      for (final f in info.facts)
+                        _Fact(value: f.value, label: f.label),
                     ],
                   ),
                   const SizedBox(height: 24),
@@ -154,22 +114,9 @@ class _SpeciesDetailScreenState extends State<SpeciesDetailScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Body structure',
-                          style: theme.textTheme.titleLarge,
-                        ),
-                        const SizedBox(height: 8),
-                        // Labelled diagram when we have one (bees for now)
-                        if (info.diagram != null) ...[
-                          AspectRatio(
-                            aspectRatio: 340 / 220,
-                            child: SvgPicture.asset(
-                              info.diagram!,
-                              semanticsLabel: 'Labelled diagram of body parts',
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                        ],
+                        Text('Body structure',
+                            style: theme.textTheme.titleLarge),
+                        const SizedBox(height: 12),
                         for (final part in info.bodyParts)
                           _BodyPart(name: part.name, detail: part.detail),
                       ],
@@ -182,17 +129,15 @@ class _SpeciesDetailScreenState extends State<SpeciesDetailScreen> {
                     spacing: 8,
                     runSpacing: 4,
                     children: [
-                      for (final plant in info.plants) Chip(label: Text(plant)),
+                      for (final plant in info.plants)
+                        Chip(label: Text(plant)),
                     ],
                   ),
                   const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: widget.onLogSpecies,
-                      icon: const Icon(Icons.add),
-                      label: const Text('Log this species'),
-                    ),
+                  ElevatedButton.icon(
+                    onPressed: widget.onLogSpecies,
+                    icon: const Icon(Icons.add),
+                    label: const Text('Log this species'),
                   ),
                 ],
               ),
@@ -213,25 +158,12 @@ class _Fact extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return GlassCard(
-      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
       child: Column(
         children: [
-          Text(
-            value,
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: theme.colorScheme.primary,
-            ),
-          ),
+          Text(value, style: theme.textTheme.titleSmall
+              ?.copyWith(color: theme.colorScheme.primary)),
           const SizedBox(height: 4),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodySmall,
-          ),
+          Text(label, style: theme.textTheme.bodySmall),
         ],
       ),
     );
@@ -248,18 +180,11 @@ class _BodyPart extends StatelessWidget {
     final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Text.rich(
-        TextSpan(
-          children: [
-            TextSpan(
-              text: '$name: ',
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-            TextSpan(text: detail),
-          ],
-        ),
-        style: theme.textTheme.bodyMedium,
-      ),
+      child: Text.rich(TextSpan(children: [
+        TextSpan(text: '$name: ',
+            style: const TextStyle(fontWeight: FontWeight.w600)),
+        TextSpan(text: detail),
+      ]), style: theme.textTheme.bodyMedium),
     );
   }
 }
