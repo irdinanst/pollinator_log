@@ -13,24 +13,49 @@ class HomeShell extends StatefulWidget {
 }
 
 class _HomeShellState extends State<HomeShell> {
-  int _currentIndex = 0;                              
-  final List<Sighting> _sightings = List.of(dummySightings); 
+  int _currentIndex = 0;
+  final List<Sighting> _sightings = List.of(dummySightings);
 
+  // ADD: open an empty form, add the result to the top of the list
   Future<void> _addSighting() async {
     final Sighting? result = await Navigator.push<Sighting>(
       context,
       MaterialPageRoute(builder: (_) => const SightingFormScreen()),
     );
     if (result != null) {
-      setState(() => _sightings.insert(0, result)); // newest first
+      setState(() => _sightings.insert(0, result));
     }
+  }
+
+  // EDIT: open the form filled with this sighting, replace it with the result
+  Future<void> _editSighting(Sighting old) async {
+    final Sighting? result = await Navigator.push<Sighting>(
+      context,
+      MaterialPageRoute(builder: (_) => SightingFormScreen(sighting: old)),
+    );
+    if (result != null) {
+      setState(() {
+        final index = _sightings.indexWhere((s) => s.id == old.id);
+        if (index != -1) _sightings[index] = result;
+      });
+    }
+  }
+
+  // DELETE: remove it from the list
+  void _deleteSighting(Sighting sighting) {
+    setState(() => _sightings.removeWhere((s) => s.id == sighting.id));
   }
 
   @override
   Widget build(BuildContext context) {
     final pages = [
       DashboardScreen(sightings: _sightings),
-      SightingsLogScreen(sightings: _sightings),
+      SightingsLogScreen(
+        sightings: _sightings,
+        onAdd: _addSighting,
+        onEdit: _editSighting,
+        onDelete: _deleteSighting,
+      ),
       const Center(child: Text('Guide (coming soon)')),
       const Center(child: Text('Profile (coming soon)')),
     ];
