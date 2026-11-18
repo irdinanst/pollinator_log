@@ -15,10 +15,12 @@ class SightingsLogScreen extends StatelessWidget {
   });
 
   final List<Sighting> sightings;
-  final VoidCallback onAdd;
-  final void Function(Sighting) onEdit;
-  final void Function(Sighting) onDelete;
-  final void Function(Sighting, int) onRestore;
+  final VoidCallback onAdd;                      // "please add one"
+  final void Function(Sighting) onEdit;          // "please edit this one"
+  final void Function(Sighting) onDelete;        // "please delete this one"
+  final void Function(Sighting, int) onRestore;  // "please put this back"
+
+  static const double tabletBreakpoint = 600; // width where we switch to a grid
 
   @override
   Widget build(BuildContext context) {
@@ -48,81 +50,35 @@ class SightingsLogScreen extends StatelessWidget {
                     ? Center(
                         child: Text('No sightings yet. Tap + to add one.',
                             style: theme.textTheme.bodyLarge))
-                    : ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(24, 0, 24, 100),
-                        itemCount: sightings.length,
-                        itemBuilder: (context, index) {
-                          final sighting = sightings[index];
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: Dismissible(
-                              key: ValueKey(sighting.id),
-                              direction: DismissDirection.endToStart,
-                              background: Container(
-                                alignment: Alignment.centerRight,
-                                padding: const EdgeInsets.only(right: 24),
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.error,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Icon(Icons.delete_outline,
-                                    color: theme.colorScheme.onError),
+                    // ── RESPONSIVE: choose layout by screen width ──
+                    : LayoutBuilder(
+                        builder: (context, constraints) {
+                          final isWide = constraints.maxWidth >= tabletBreakpoint;
+
+                          if (isWide) {
+                            // Tablet: 2-column grid
+                            return GridView.builder(
+                              padding: const EdgeInsets.fromLTRB(24, 0, 24, 100),
+                              itemCount: sightings.length,
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                crossAxisSpacing: 16,
+                                mainAxisSpacing: 16,
+                                mainAxisExtent: 270, // height of each card
                               ),
-                              confirmDismiss: (_) async {
-                                final confirmed = await showDialog<bool>(
-                                  context: context,
-                                  builder: (dialogContext) => AlertDialog(
-                                    title: const Text('Delete sighting?'),
-                                    content: Text(
-                                        'Remove ${sighting.species} from your log?'),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(dialogContext, false),
-                                        child: const Text('Cancel'),
-                                      ),
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(dialogContext, true),
-                                        style: TextButton.styleFrom(
-                                            foregroundColor: theme.colorScheme.error),
-                                        child: const Text('Delete'),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                                return confirmed ?? false;
-                              },
-                              // Deleted, but offer Undo (user control & freedom)
-                              onDismissed: (_) {
-                                onDelete(sighting);
-                                ScaffoldMessenger.of(context)
-                                  ..hideCurrentSnackBar()
-                                  ..showSnackBar(
-                                    SnackBar(
-                                      content: Text('${sighting.species} deleted'),
-                                      action: SnackBarAction(
-                                        label: 'Undo',
-                                        onPressed: () => onRestore(sighting, index),
-                                      ),
-                                    ),
-                                  );
-                              },
-                              child: _SightingCard(
-                                sighting: sighting,
-                                onTap: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => SpeciesDetailScreen(
-                                      onLogSpecies: () {
-                                        Navigator.pop(context);
-                                        onAdd();
-                                      },
-                                    ),
-                                  ),
-                                ),
-                                onEdit: () => onEdit(sighting),
-                              ),
+                              itemBuilder: (context, index) =>
+                                  _buildItem(context, index),
+                            );
+                          }
+
+                          // Phone: 1-column list (REQUIRED ELEMENT: ListView.builder)
+                          return ListView.builder(
+                            padding: const EdgeInsets.fromLTRB(24, 0, 24, 100),
+                            itemCount: sightings.length,
+                            itemBuilder: (context, index) => Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: _buildItem(context, index),
                             ),
                           );
                         },
@@ -134,8 +90,82 @@ class SightingsLogScreen extends StatelessWidget {
       ),
     );
   }
+
+  // One swipeable card, used by BOTH the list and the grid
+  Widget _buildItem(BuildContext context, int index) {
+    final theme = Theme.of(context);
+    final sighting = sightings[index];
+
+    return Dismissible(
+      key: ValueKey(sighting.id),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 24),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.error,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Icon(Icons.delete_outline, color: theme.colorScheme.onError),
+      ),
+      // Ask before deleting (error prevention)
+      confirmDismiss: (_) async {
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: const Text('Delete sighting?'),
+            content: Text('Remove ${sighting.species} from your log?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, true),
+                style: TextButton.styleFrom(
+                    foregroundColor: theme.colorScheme.error),
+                child: const Text('Delete'),
+              ),
+            ],
+          ),
+        );
+        return confirmed ?? false;
+      },
+      // Deleted, but offer Undo (user control & freedom)
+      onDismissed: (_) {
+        onDelete(sighting);
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text('${sighting.species} deleted'),
+              action: SnackBarAction(
+                label: 'Undo',
+                onPressed: () => onRestore(sighting, index),
+              ),
+            ),
+          );
+      },
+      child: _SightingCard(
+        sighting: sighting,
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => SpeciesDetailScreen(
+              onLogSpecies: () {
+                Navigator.pop(context); // close detail
+                onAdd();                // open the form
+              },
+            ),
+          ),
+        ),
+        onEdit: () => onEdit(sighting),
+      ),
+    );
+  }
 }
 
+// One card (Hotel-list style: picture area on top, details below)
 class _SightingCard extends StatelessWidget {
   const _SightingCard({
     required this.sighting,
@@ -224,9 +254,13 @@ class _SightingCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(sighting.species,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: theme.textTheme.titleMedium
                                 ?.copyWith(fontWeight: FontWeight.w600)),
                         Text(sighting.scientificName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: theme.textTheme.bodySmall
                                 ?.copyWith(fontStyle: FontStyle.italic)),
                         const SizedBox(height: 6),
@@ -234,7 +268,11 @@ class _SightingCard extends StatelessWidget {
                           children: [
                             Icon(Icons.local_florist_outlined, size: 16, color: scheme.primary),
                             const SizedBox(width: 4),
-                            Text(sighting.plant, style: theme.textTheme.bodySmall),
+                            Flexible(
+                              child: Text(sighting.plant,
+                                  style: theme.textTheme.bodySmall,
+                                  overflow: TextOverflow.ellipsis),
+                            ),
                             const SizedBox(width: 12),
                             Icon(Icons.place_outlined, size: 16, color: scheme.primary),
                             const SizedBox(width: 4),
@@ -246,7 +284,8 @@ class _SightingCard extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 4),
-                        Text(_formatDate(sighting.dateTime), style: theme.textTheme.bodySmall),
+                        Text(_formatDate(sighting.dateTime),
+                            style: theme.textTheme.bodySmall),
                       ],
                     ),
                   ),
