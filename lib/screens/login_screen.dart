@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/glow_background.dart';
 import 'register_screen.dart';
-import 'dashboard_screen.dart';
+import 'home_shell.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -31,9 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => const DashboardScreen(
-            sightings: [],
-          ),
+        builder: (context) => const HomeShell(),
         ),
       );
     }
