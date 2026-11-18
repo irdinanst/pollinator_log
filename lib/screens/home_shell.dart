@@ -14,9 +14,10 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   int _currentIndex = 0;
+  String _filter = 'All';
   final List<Sighting> _sightings = List.of(dummySightings);
 
-  // ADD: open an empty form, add the result to the top of the list
+  // ADD
   Future<void> _addSighting() async {
     final Sighting? result = await Navigator.push<Sighting>(
       context,
@@ -27,7 +28,7 @@ class _HomeShellState extends State<HomeShell> {
     }
   }
 
-  // EDIT: open the form filled with this sighting, replace it with the result
+  // EDIT
   Future<void> _editSighting(Sighting old) async {
     final Sighting? result = await Navigator.push<Sighting>(
       context,
@@ -41,11 +42,11 @@ class _HomeShellState extends State<HomeShell> {
     }
   }
 
-  // DELETE: remove it from the list
+  // DELETE
   void _deleteSighting(Sighting sighting) {
     setState(() => _sightings.removeWhere((s) => s.id == sighting.id));
   }
-    // UNDO: put a deleted sighting back where it was
+    // UNDO
   void _restoreSighting(Sighting sighting, int index) {
     setState(() {
       final safeIndex = index.clamp(0, _sightings.length);
@@ -63,6 +64,8 @@ class _HomeShellState extends State<HomeShell> {
         onEdit: _editSighting,
         onDelete: _deleteSighting,
         onRestore: _restoreSighting,
+        filter: _filter,
+        onFilterChanged: (g) => setState(() => _filter = g),
       ),
       const Center(child: Text('Guide (coming soon)')),
       const Center(child: Text('Profile (coming soon)')),

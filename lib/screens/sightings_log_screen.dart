@@ -12,19 +12,37 @@ class SightingsLogScreen extends StatelessWidget {
     required this.onEdit,
     required this.onDelete,
     required this.onRestore,
+    required this.filter,
+    required this.onFilterChanged,
   });
 
   final List<Sighting> sightings;
-  final VoidCallback onAdd;                      // "please add one"
-  final void Function(Sighting) onEdit;          // "please edit this one"
-  final void Function(Sighting) onDelete;        // "please delete this one"
-  final void Function(Sighting, int) onRestore;  // "please put this back"
+  final VoidCallback onAdd;
+  final void Function(Sighting) onEdit;
+  final void Function(Sighting) onDelete;
+  final void Function(Sighting, int) onRestore;
+  final String filter;                       // selected group, e.g. 'Bee'
+  final ValueChanged<String> onFilterChanged; // "please change the filter"
 
-  static const double tabletBreakpoint = 600; // width where we switch to a grid
+  static const double tabletBreakpoint = 600;
+
+  // Group value -> label shown on the chip
+  static const Map<String, String> filterLabels = {
+    'All': 'All',
+    'Bee': 'Bees',
+    'Butterfly': 'Butterflies',
+    'Bird': 'Birds',
+    'Fly': 'Flies',
+  };
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
+    // Only the sightings that match the chosen filter
+    final visible = filter == 'All'
+        ? sightings
+        : sightings.where((s) => s.group == filter).toList();
 
     return Scaffold(
       body: GlowBackground(
@@ -41,44 +59,67 @@ class SightingsLogScreen extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
                 child: Text(
-                  '${sightings.length} sightings · swipe left to delete',
+                  '${visible.length} of ${sightings.length} sightings · swipe left to delete',
                   style: theme.textTheme.bodyMedium,
                 ),
               ),
+
+              // ── Filter chips (scroll sideways on small phones) ──
+              SizedBox(
+                height: 48,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  children: filterLabels.entries.map((entry) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ChoiceChip(
+                        label: Text(entry.value),
+                        selected: filter == entry.key,
+                        onSelected: (_) => onFilterChanged(entry.key),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+              const SizedBox(height: 8),
+
               Expanded(
-                child: sightings.isEmpty
+                child: visible.isEmpty
                     ? Center(
-                        child: Text('No sightings yet. Tap + to add one.',
-                            style: theme.textTheme.bodyLarge))
-                    // ── RESPONSIVE: choose layout by screen width ──
+                        child: Text(
+                          filter == 'All'
+                              ? 'No sightings yet. Tap + to add one.'
+                              : 'No ${filterLabels[filter]!.toLowerCase()} logged yet.',
+                          style: theme.textTheme.bodyLarge,
+                        ),
+                      )
                     : LayoutBuilder(
                         builder: (context, constraints) {
                           final isWide = constraints.maxWidth >= tabletBreakpoint;
 
                           if (isWide) {
-                            // Tablet: 2-column grid
                             return GridView.builder(
                               padding: const EdgeInsets.fromLTRB(24, 0, 24, 100),
-                              itemCount: sightings.length,
+                              itemCount: visible.length,
                               gridDelegate:
                                   const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2,
                                 crossAxisSpacing: 16,
                                 mainAxisSpacing: 16,
-                                mainAxisExtent: 270, // height of each card
+                                mainAxisExtent: 270,
                               ),
                               itemBuilder: (context, index) =>
-                                  _buildItem(context, index),
+                                  _buildItem(context, visible[index]),
                             );
                           }
 
-                          // Phone: 1-column list (REQUIRED ELEMENT: ListView.builder)
                           return ListView.builder(
                             padding: const EdgeInsets.fromLTRB(24, 0, 24, 100),
-                            itemCount: sightings.length,
+                            itemCount: visible.length,
                             itemBuilder: (context, index) => Padding(
                               padding: const EdgeInsets.only(bottom: 16),
-                              child: _buildItem(context, index),
+                              child: _buildItem(context, visible[index]),
                             ),
                           );
                         },
@@ -91,10 +132,8 @@ class SightingsLogScreen extends StatelessWidget {
     );
   }
 
-  // One swipeable card, used by BOTH the list and the grid
-  Widget _buildItem(BuildContext context, int index) {
+  Widget _buildItem(BuildContext context, Sighting sighting) {
     final theme = Theme.of(context);
-    final sighting = sightings[index];
 
     return Dismissible(
       key: ValueKey(sighting.id),
@@ -108,7 +147,6 @@ class SightingsLogScreen extends StatelessWidget {
         ),
         child: Icon(Icons.delete_outline, color: theme.colorScheme.onError),
       ),
-      // Ask before deleting (error prevention)
       confirmDismiss: (_) async {
         final confirmed = await showDialog<bool>(
           context: context,
@@ -131,8 +169,9 @@ class SightingsLogScreen extends StatelessWidget {
         );
         return confirmed ?? false;
       },
-      // Deleted, but offer Undo (user control & freedom)
       onDismissed: (_) {
+        // Remember its position in the FULL list (not the filtered one)
+        final originalIndex = sightings.indexOf(sighting);
         onDelete(sighting);
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
@@ -141,7 +180,7 @@ class SightingsLogScreen extends StatelessWidget {
               content: Text('${sighting.species} deleted'),
               action: SnackBarAction(
                 label: 'Undo',
-                onPressed: () => onRestore(sighting, index),
+                onPressed: () => onRestore(sighting, originalIndex),
               ),
             ),
           );
@@ -153,8 +192,8 @@ class SightingsLogScreen extends StatelessWidget {
           MaterialPageRoute(
             builder: (_) => SpeciesDetailScreen(
               onLogSpecies: () {
-                Navigator.pop(context); // close detail
-                onAdd();                // open the form
+                Navigator.pop(context);
+                onAdd();
               },
             ),
           ),
@@ -165,7 +204,6 @@ class SightingsLogScreen extends StatelessWidget {
   }
 }
 
-// One card (Hotel-list style: picture area on top, details below)
 class _SightingCard extends StatelessWidget {
   const _SightingCard({
     required this.sighting,
