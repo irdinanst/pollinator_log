@@ -45,6 +45,13 @@ class _HomeShellState extends State<HomeShell> {
   void _deleteSighting(Sighting sighting) {
     setState(() => _sightings.removeWhere((s) => s.id == sighting.id));
   }
+    // UNDO: put a deleted sighting back where it was
+  void _restoreSighting(Sighting sighting, int index) {
+    setState(() {
+      final safeIndex = index.clamp(0, _sightings.length);
+      _sightings.insert(safeIndex, sighting);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +62,7 @@ class _HomeShellState extends State<HomeShell> {
         onAdd: _addSighting,
         onEdit: _editSighting,
         onDelete: _deleteSighting,
+        onRestore: _restoreSighting,
       ),
       const Center(child: Text('Guide (coming soon)')),
       const Center(child: Text('Profile (coming soon)')),

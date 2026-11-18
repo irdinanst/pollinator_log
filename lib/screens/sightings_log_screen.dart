@@ -11,12 +11,14 @@ class SightingsLogScreen extends StatelessWidget {
     required this.onAdd,
     required this.onEdit,
     required this.onDelete,
+    required this.onRestore,
   });
 
   final List<Sighting> sightings;
   final VoidCallback onAdd;
   final void Function(Sighting) onEdit;
   final void Function(Sighting) onDelete;
+  final void Function(Sighting, int) onRestore;
 
   @override
   Widget build(BuildContext context) {
@@ -66,11 +68,45 @@ class SightingsLogScreen extends StatelessWidget {
                                 child: Icon(Icons.delete_outline,
                                     color: theme.colorScheme.onError),
                               ),
+                              confirmDismiss: (_) async {
+                                final confirmed = await showDialog<bool>(
+                                  context: context,
+                                  builder: (dialogContext) => AlertDialog(
+                                    title: const Text('Delete sighting?'),
+                                    content: Text(
+                                        'Remove ${sighting.species} from your log?'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(dialogContext, false),
+                                        child: const Text('Cancel'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(dialogContext, true),
+                                        style: TextButton.styleFrom(
+                                            foregroundColor: theme.colorScheme.error),
+                                        child: const Text('Delete'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                return confirmed ?? false;
+                              },
+                              // Deleted, but offer Undo (user control & freedom)
                               onDismissed: (_) {
                                 onDelete(sighting);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('${sighting.species} deleted')),
-                                );
+                                ScaffoldMessenger.of(context)
+                                  ..hideCurrentSnackBar()
+                                  ..showSnackBar(
+                                    SnackBar(
+                                      content: Text('${sighting.species} deleted'),
+                                      action: SnackBarAction(
+                                        label: 'Undo',
+                                        onPressed: () => onRestore(sighting, index),
+                                      ),
+                                    ),
+                                  );
                               },
                               child: _SightingCard(
                                 sighting: sighting,
