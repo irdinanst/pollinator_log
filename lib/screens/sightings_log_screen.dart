@@ -191,6 +191,7 @@ class SightingsLogScreen extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (_) => SpeciesDetailScreen(
+              sighting: sighting,
               onLogSpecies: () {
                 Navigator.pop(context);
                 onAdd();

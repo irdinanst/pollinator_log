@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 220">
+<g transform="translate(70 40)">
+<g><path d="M100 60 C80 40 40 34 8 48 C20 56 22 66 18 76 C30 70 40 74 44 84 C54 76 66 78 72 88 C82 80 92 80 100 86 Z" fill="#4A3F4E"/><path d="M100 62 L40 46 M100 64 L44 74 M100 66 L70 84" stroke="#2E2630" stroke-width="1.2"/></g>
+<g transform="translate(200 0) scale(-1 1)"><path d="M100 60 C80 40 40 34 8 48 C20 56 22 66 18 76 C30 70 40 74 44 84 C54 76 66 78 72 88 C82 80 92 80 100 86 Z" fill="#4A3F4E"/><path d="M100 62 L40 46 M100 64 L44 74 M100 66 L70 84" stroke="#2E2630" stroke-width="1.2"/></g>
+<ellipse cx="100" cy="72" rx="14" ry="22" fill="#6B5A5E"/>
+<path d="M90 40 L88 28 L96 36 Z M110 40 L112 28 L104 36 Z" fill="#6B5A5E"/>
+<ellipse cx="100" cy="48" rx="12" ry="13" fill="#6B5A5E"/>
+<circle cx="95" cy="46" r="2" fill="#1E1A17"/>
+<circle cx="105" cy="46" r="2" fill="#1E1A17"/>
+<ellipse cx="100" cy="56" rx="5" ry="4" fill="#4A3F4E"/>
+</g>
+<g fill="none" stroke="#5B6B60" stroke-width="1.4" stroke-dasharray="3 3"><path d="M240 26 L180 72"/><path d="M120 22 L165 86"/><path d="M290 94 L170 98"/><path d="M50 44 L106 102"/><path d="M296 138 L230 92"/><path d="M170 188 L170 122"/></g>
+<g fill="#F2B83A" stroke="#1F4D35" stroke-width="1.5"><circle cx="180" cy="72" r="4"/><circle cx="165" cy="86" r="4"/><circle cx="170" cy="98" r="4"/><circle cx="106" cy="102" r="4"/><circle cx="230" cy="92" r="4"/><circle cx="170" cy="122" r="4"/></g>
+<g font-family="sans-serif" font-size="12" font-weight="600" fill="#15241B" text-anchor="middle"><text x="240" y="22">Ears</text><text x="120" y="18">Eyes</text><text x="296" y="56">Long snout</text><text x="50" y="40">Wing skin</text><text x="296" y="150">Long fingers</text><text x="170" y="200">Furry body</text></g></svg>

@@ -155,6 +155,9 @@ class _SightingFormScreenState extends State<SightingFormScreen> {
 
                 const SizedBox(height: 20),
 
+                const _PhotoPlaceholder(),
+                const SizedBox(height: 20),
+
                 GlassCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -395,6 +398,60 @@ class _FieldLabel extends StatelessWidget {
       label,
       style: theme.textTheme.titleSmall?.copyWith(
         fontWeight: FontWeight.w600,
+      ),
+    );
+  }
+}
+/// Photo area for the sighting. Practical 1 shows the layout only.
+/// Practical 2 will open the camera here and save the path to imagePath.
+class _PhotoPlaceholder extends StatelessWidget {
+  const _PhotoPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(24),
+        onTap: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Camera will be added in Practical 2'),
+            ),
+          );
+        },
+        child: Ink(
+          height: 170,
+          decoration: BoxDecoration(
+            color: scheme.secondary.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: scheme.secondary.withValues(alpha: 0.6),
+              width: 1.5,
+            ),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircleAvatar(
+                radius: 30,
+                backgroundColor: Colors.white,
+                child: Icon(Icons.photo_camera_outlined,
+                    size: 30, color: scheme.primary),
+              ),
+              const SizedBox(height: 12),
+              Text('Add a photo',
+                  style: theme.textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 2),
+              Text('A clear photo helps others confirm the species',
+                  style: theme.textTheme.bodySmall),
+            ],
+          ),
+        ),
       ),
     );
   }

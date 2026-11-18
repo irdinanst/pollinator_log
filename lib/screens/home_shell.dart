@@ -4,6 +4,8 @@ import '../data/dummy_sightings.dart';
 import 'dashboard_screen.dart';
 import 'sightings_log_screen.dart';
 import 'sighting_form_screen.dart';
+import 'guide_screen.dart';
+import 'profile_screen.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
@@ -57,7 +59,13 @@ class _HomeShellState extends State<HomeShell> {
   @override
   Widget build(BuildContext context) {
     final pages = [
-      DashboardScreen(sightings: _sightings),
+      DashboardScreen(
+        sightings: _sightings,
+        onGroupTap: (group) => setState(() {
+          _filter = group;      // e.g. 'Bee'
+          _currentIndex = 1;    // switch to the Log tab
+        }),
+      ),
       SightingsLogScreen(
         sightings: _sightings,
         onAdd: _addSighting,
@@ -67,8 +75,8 @@ class _HomeShellState extends State<HomeShell> {
         filter: _filter,
         onFilterChanged: (g) => setState(() => _filter = g),
       ),
-      const Center(child: Text('Guide (coming soon)')),
-      const Center(child: Text('Profile (coming soon)')),
+      const GuideScreen(),
+      ProfileScreen(sightings: _sightings),
     ];
 
     return Scaffold(
