@@ -1,17 +1,29 @@
-# pollinator_log
+# Pollinator Spotting Log 🐝
+## What the app can do
 
-A new Flutter project.
+- Onboarding pages to introduce the app
+- Login and Register
+- Dashboard with a weekly spotting goal
+- Sightings Log to add, edit, filter and delete sightings
+- Species Detail for each pollinator
+- Guide to learn about 6 pollinator groups
+- Profile with achievements
 
-## Getting Started
+For now the app uses sample data. Camera and location will be added in Practical 2.
 
-This project is a starting point for a Flutter application.
+## How to run
 
-A few resources to get you started if this is your first Flutter project:
+```bash
+flutter pub get
+flutter run
+```
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+To log in, use any email and a password with at least 6 characters.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Group members
+
+- Irdina Adriana Nasution binti Muhammad
+- Puteri Amalia Natasha binti Md Zam Zamir
+- Norman Afiq bin Roslan
+
+Lecturer: Dr. Jamal Abdullahi Nuh
